@@ -21,6 +21,39 @@ class Range
 	IntegralType mStopValue;   ///< Stop value of the range  (exclusive)
 	IntegralType mStepValue;   ///< Step taken on each increment.
 
+	size_t mSize;   ///< The difference between the start and stop of the range.
+	size_t mLength; ///< The number of steps between the start and stop of the range.
+
+	void _initialize(
+		IntegralType startValue,
+		IntegralType stopValue,
+		IntegralType step )
+	{
+		mStartValue = startValue;
+		mStopValue = stopValue;
+		mStepValue = step;
+		
+		if ( mStartValue == mStopValue )
+		{
+			mSize = 0;
+			mLength = 0;
+			mStepValue = 0;
+		}
+		else if ( mStartValue < mStopValue )
+		{
+			if ( 0 > mStep )
+			{
+				throw std::domain_error( "The step must be positive when start < stop." );
+			}
+
+			mSize = size_t( mStopValue - mStartValue );
+			mLength = 
+		}
+		else
+		{
+		}
+	}
+
 public:
 	class iterator
 	{
@@ -95,6 +128,8 @@ public:
 		mStartValue = 0;
 		mStopValue = 0;
 		mStepValue = 0;
+		mSize = 0;
+		mLength = 0;
 	}
 
 	/**
@@ -106,6 +141,8 @@ public:
 		mStartValue = std::exchange( other.mStartValue, 0 );
 		mStopValue = std::exchange( other.mStopValue, 0 );
 		mStepValue = std::exchange( other.mStepValue, 0 );
+		mSize = std::exchange( other.mSize, 0 );
+		mLength = std::exchange( other.mLength, 0 );
 	}
 
 	/**
@@ -117,12 +154,39 @@ public:
 		mStartValue = other.mStartValue;
 		mStopValue = other.mStopValue;
 		mStepValue = other.mStepValue;
+		mSize = other.mSize;
+		mLength = other.mLength;
 	}
 
-	// Valid (h,s];i | h < s
-	// Valid [s,h);i | s < h
-	// Valid (h,s];i or [s,h);i | where h = s
-	//
+	Range( IntegralType stopValue )
+	{
+		mStartValue = 0;
+		mStopValue = stopValue;
+		if ( mStartValue == mStopValue )
+		{
+			
+		}
+		else if ( mStartValue < mStopValue )
+		{
+		}
+		else
+		{
+		}
+		mStepValue = ( mStartValue > mStopValue ) ? -1 : ( mStartValue != mStopValue );
+		if ( mStartValue <
+		mSize = size_t( mStopValue - mStartValue );
+	}
+
+	Range( IntegralType startValue, IntegralType stopValue )
+	{
+		mStartValue = startValue;
+		mStopValue = stopValue;
+		mStepValue = ( mStartValue > mStopValue ) ? -1 : ( mStartValue != mStopValue );
+	}
+
+	Range( IntegralType startValue, IntegralType stopValue, IntegralType step )
+	{
+	}
 
 	/**
 	 * If stop is greater than zero, then the range shall be: [0, stop); step
@@ -173,5 +237,22 @@ public:
 	IntegralType stop() const
 	{
 		return mStopValue;
+	}
+
+	/**
+	 * The size of the range.
+	 * @return The difference between the end and the start of the range.
+	 */
+	size_t size() const
+	{
+		return mStopValue - mStartValue;
+	}
+
+	/**
+	 * The number of steps in the range.
+	 * @return The number of steps between the beginning and end of the range.
+	 */
+	size_t length() const
+	{
 	}
 };
