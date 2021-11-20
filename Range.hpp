@@ -11,7 +11,8 @@
 #include <utility>
 
 /**
- * 
+ * A utility class for iterating over an integral range.
+ * The start
  */
 template < typename IntegralType,
 	typename = typename std::enable_if< std::is_integral< IntegralType >::value >::type >
@@ -24,6 +25,15 @@ class Range
 	size_t mSize;   ///< The difference between the start and stop of the range.
 	size_t mLength; ///< The number of steps between the start and stop of the range.
 
+	// Signed
+	//  (stop,start];step
+	//  [start,stop);step
+	//   start == stop; step := 0
+	// Unsigned
+	//  (stop,start];step
+	//  [start,stop);step
+	//    start == stop; step := 0
+	
 	void _initialize(
 		IntegralType startValue,
 		IntegralType stopValue,
@@ -160,32 +170,23 @@ public:
 
 	Range( IntegralType stopValue )
 	{
-		mStartValue = 0;
-		mStopValue = stopValue;
-		if ( mStartValue == mStopValue )
-		{
-			
-		}
-		else if ( mStartValue < mStopValue )
-		{
-		}
-		else
-		{
-		}
-		mStepValue = ( mStartValue > mStopValue ) ? -1 : ( mStartValue != mStopValue );
-		if ( mStartValue <
-		mSize = size_t( mStopValue - mStartValue );
+		_initialize( IntegralType( 0 ), stopValue,
+			( IntegralType( 0 ) != stopValue )
+				* ( IntegralType( 0 ) < stopValue
+					? IntegralType( 1 ) : IntegralType( -1 ) ) );
 	}
 
 	Range( IntegralType startValue, IntegralType stopValue )
 	{
-		mStartValue = startValue;
-		mStopValue = stopValue;
-		mStepValue = ( mStartValue > mStopValue ) ? -1 : ( mStartValue != mStopValue );
+		_initialize( startValue, stopValue,
+			( startValue != stopValue )
+				* ( startValue < stopValue
+					? IntegralType( 1 ) : IntegralType( -1 ) ) );
 	}
 
 	Range( IntegralType startValue, IntegralType stopValue, IntegralType step )
 	{
+		_initialize( startValue, stopValue, ( startValue != stopValue ) * step );
 	}
 
 	/**
@@ -199,9 +200,6 @@ public:
 		mStopValue = stopValue;
 		mStepValue = step;
 	}
-
-	Range( IntegralType startValue, IntegralType stopValue, IntegralType step = 1 );
-	Range( std::pair< IntegralType, IntegralType > range, IntegralType step = 1 );
 
 	/**
 	 * Iterator to the beginning of the range.
