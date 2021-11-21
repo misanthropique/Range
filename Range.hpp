@@ -18,12 +18,14 @@ template < typename IntegralType,
 	typename = typename std::enable_if< std::is_integral< IntegralType >::value >::type >
 class Range
 {
+	static const IntegralType MOST_SIGNIFICANT_BIT = IntegralType( 1 ) << ( 8 * sizeof( IntegralType ) - 1 );
+
 	IntegralType mStartValue;  ///< Start value of the range (inclusive)
 	IntegralType mStopValue;   ///< Stop value of the range  (exclusive)
-	IntegralType mStepValue;   ///< Step taken on each increment.
+	std::intmax_t mStepValue;   ///< Step taken on each increment.
 
-	size_t mSize;   ///< The difference between the start and stop of the range.
-	size_t mLength; ///< The number of steps between the start and stop of the range.
+	std::uintmax_t mSize;   ///< The difference between the start and stop of the range.
+	std::uintmax_t mLength; ///< The number of steps between the start and stop of the range.
 
 	// Signed
 	//  (stop,start];step
@@ -35,21 +37,21 @@ class Range
 	//    start == stop; step := 0
 	
 	void _initialize(
-		IntegralType startValue,
-		IntegralType stopValue,
-		IntegralType step )
+		IntegralType start,
+		IntegralType stop,
+		std::intmax_t step )
 	{
-		mStartValue = startValue;
-		mStopValue = stopValue;
+		mStartValue = start;
+		mStopValue = stop;
 		mStepValue = step;
 		
-		if ( mStartValue == mStopValue )
+		if ( mStart == mStop )
 		{
 			mSize = 0;
 			mLength = 0;
 			mStepValue = 0;
 		}
-		else if ( mStartValue < mStopValue )
+		else if ( mStart < mStop )
 		{
 			if ( 0 > mStep )
 			{
@@ -173,7 +175,7 @@ public:
 		_initialize( IntegralType( 0 ), stopValue,
 			( IntegralType( 0 ) != stopValue )
 				* ( IntegralType( 0 ) < stopValue
-					? IntegralType( 1 ) : IntegralType( -1 ) ) );
+					? std::intmax_t( 1 ) : std::intmax_t( -1 ) ) );
 	}
 
 	Range( IntegralType startValue, IntegralType stopValue )
@@ -181,24 +183,12 @@ public:
 		_initialize( startValue, stopValue,
 			( startValue != stopValue )
 				* ( startValue < stopValue
-					? IntegralType( 1 ) : IntegralType( -1 ) ) );
+					? std::intmax_t( 1 ) : std::intmax_t( -1 ) ) );
 	}
 
-	Range( IntegralType startValue, IntegralType stopValue, IntegralType step )
+	Range( IntegralType startValue, IntegralType stopValue, std::intmax_t step )
 	{
 		_initialize( startValue, stopValue, ( startValue != stopValue ) * step );
-	}
-
-	/**
-	 * If stop is greater than zero, then the range shall be: [0, stop); step
-	 * If IntegralType is signed and stop is less than zero, then the range shall be: (stop, 0]; step
-	 * 
-	 */
-	Range( IntegralType stopValue, IntegralType step = 1 )
-	{
-		mStartValue = 0;
-		mStopValue = stopValue;
-		mStepValue = step;
 	}
 
 	/**
